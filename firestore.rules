@@ -1,0 +1,42 @@
+rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  VibeGram — правила Firestore
+//  Вкладка «Firestore Database → Правила» → вставить → «Опубликовать».
+//
+//  ВАЖНО: этот вариант — открытый (тестовый). Он нужен, чтобы приложение заработало
+//  сразу: в клиенте нет Firebase Auth, все пользователи — локальные.
+//  Любой, кто достанет конфиг из бандла, сможет читать и писать коллекцию docs.
+//  Для боевого применения — см. закомментированный строгий вариант ниже и
+//  включите Firebase Authentication.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Зеркало локальной таблицы docs: path / collection_path / id / data / updated_at
+    match /docs/{docId} {
+      allow read, write: if true;
+    }
+
+    // Строгий вариант (включите Firebase Auth и раскомментируйте):
+    // match /docs/{docId} {
+    //   allow read: if request.auth != null;
+    //   allow create, update: if request.auth != null;
+    //   allow delete: if request.auth != null;
+    // }
+    //
+    // Ещё строже — «каждый правит только свой профиль» (для документов users/<username>):
+    // match /docs/{docId} {
+    //   allow read: if request.auth != null;
+    //   allow write: if request.auth != null
+    //     && (!resource.data.path.matches('users/.*')
+    //         || resource.data.path == 'users/' + request.auth.token.name);
+    // }
+
+    // Всё остальное закрыто
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
